@@ -1,26 +1,67 @@
-#include <iostream>
-#include <SDL.h>
+#include "pch.h"
+#include "Graphics/Texture.h"
+#include "Engine.h"
+#include "Objects/GameObject.h"
+#include "Components/PlayerComponent.h"
+#include "Core/Json.h"
+#include "Objects/ObjectFactory.h"
+#include "Objects/Scene.h"
+
+
+nc::Engine engine;
+nc::Scene scene;
 
 int main(int, char**)
-{
-	if (SDL_Init(SDL_INIT_VIDEO) != 0)
+{	
+	engine.StartUp();
+
+	nc::ObjectFactory::Instance().Initialize();
+	nc::ObjectFactory::Instance().Register("PlayerComponent", new nc::Creator<nc::PlayerComponent, nc::Object>);
+	
+	rapidjson::Document document;
+	nc::json::Load("scene.txt", document);
+
+	scene.Create(&engine);
+	scene.Read(document);
+
+	for (size_t i = 0; i < 10; i++)
 	{
-		std::cout << "SDL_Init Error: " << SDL_GetError() << std::endl;
-		return 1;
+		nc::GameObject* gameObject = nc::ObjectFactory::Instance().Create<nc::GameObject>("ProtoBox");
+		gameObject->m_transform.position = nc::Vector2{ nc::random(0, 800), nc::random(0, 200) };
+		gameObject->m_transform.angle = nc::random(0, 360);
+		scene.AddGameObject(gameObject);
 	}
 
-	SDL_Window* window = SDL_CreateWindow("GAT150", 100, 100, 800, 600, SDL_WINDOW_SHOWN);
-	if (window == nullptr) {
-		std::cout << "SDL_CreateWindow Error: " << SDL_GetError() << std::endl;
-		SDL_Quit();
-		return 1;
+	SDL_Event event;
+	bool quit = false;
+	while (!quit)
+	{
+		SDL_PollEvent(&event);
+		switch (event.type)
+		{
+		case SDL_QUIT:
+			quit = true;
+			break;
+		}
+
+		//update
+		engine.Update();
+		scene.Update();
+
+		if (engine.GetSystem<nc::InputSystem>()->GetButtonState(SDL_SCANCODE_ESCAPE) == nc::InputSystem::eButtonState::PRESSED)
+		{
+			quit = true;
+		}
+
+		// draw
+		engine.GetSystem<nc::Renderer>()->BeginFrame();
+		scene.Draw();
+
+		engine.GetSystem<nc::Renderer>()->EndFrame();
 	}
-
-	// wait for keyboard enter to exit
-	std::getchar();
-
-
-	SDL_Quit();
+	
+	scene.Destroy();
+	engine.Shutdown();
 
 	return 0;
 }
