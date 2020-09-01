@@ -16,5 +16,5 @@ namespace nc
 		nc::ObjectFactory::Instance().Register("SpriteAnimationComponents", new Creator<nc::SpriteAnimationComponent, Object>);
 		nc::ObjectFactory::Instance().Register("RigidBodyComponent", new Creator<nc::RigidBodyComponent, Object>);
 		nc::ObjectFactory::Instance().Register("AudioComponent", new Creator<nc::AudioComponent, Object>);
-	}
+	} 
 }

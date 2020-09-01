@@ -19,6 +19,8 @@ namespace nc
                 document.ParseStream(istream);
                 success = document.IsObject();
                 ASSERT_MSG(success, "Error json is not valid: " + filename);
+                
+                stream.close();
             }
             return success;
 
@@ -202,6 +204,56 @@ namespace nc
             data.w = property[2].GetInt();
             data.h = property[3].GetInt();
 
+
+            return true;
+        }
+
+        bool Get(const rapidjson::Value& value, const std::string& name, std::vector<std::string>& data)
+        {
+            auto iter = value.FindMember(name.c_str());
+            if (iter == value.MemberEnd())
+            {
+                return false;
+            }
+
+            auto& property = iter->value;
+            if (property.IsArray() == false)
+            {
+                return false;
+            }
+
+            for (rapidjson::SizeType i = 0; i < property.Size(); i++)
+            {
+                if (property[i].IsString())
+                {
+                    data.push_back(property[i].GetString());
+                }
+            }
+
+            return true;
+        }
+
+        bool Get(const rapidjson::Value& value, const std::string& name, std::vector<int>& data)
+        {
+            auto iter = value.FindMember(name.c_str());
+            if (iter == value.MemberEnd())
+            {
+                return false;
+            }
+
+            auto& property = iter->value;
+            if (property.IsArray() == false)
+            {
+                return false;
+            }
+
+            for (rapidjson::SizeType i = 0; i < property.Size(); i++)
+            {
+                if (property[i].IsInt())
+                {
+                    data.push_back(property[i].GetInt());
+                }
+            }
 
             return true;
         }

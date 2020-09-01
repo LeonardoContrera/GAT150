@@ -1,5 +1,7 @@
 #pragma once
 #include "Core/Json.h"
+#include "Core/EventManager.h"
+
 namespace nc
 {
 	class Object
